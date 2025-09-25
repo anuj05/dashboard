@@ -1,0 +1,180 @@
+{
+	"private": true,
+	"scripts": {
+		"build": "next build",
+		"dev": "next dev --turbopack",
+		"start": "next start"
+	},
+	"dependencies": {
+		"@heroicons/react": "^2.2.0",
+		"@tailwindcss/forms": "^0.5.10",
+		"autoprefixer": "10.4.20",
+		"bcrypt": "^5.1.1",
+		"clsx": "^2.1.1",
+		"next": "latest",
+		"next-auth": "5.0.0-beta.25",
+		"postcss": "8.5.1",
+		"postgres": "^3.4.6",
+		"react": "latest",
+		"react-dom": "latest",
+		"tailwindcss": "3.4.17",
+		"typescript": "5.7.3",
+		"use-debounce": "^10.0.4",
+		"zod": "^3.25.17"
+	},
+	"devDependencies": {
+		"@types/bcrypt": "^5.0.2",
+		"@types/node": "22.10.7",
+		"@types/react": "19.0.7",
+		"@types/react-dom": "19.0.3"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"bcrypt",
+			"sharp"
+		]
+	},
+	"Transform": "AWS::Serverless-2016-10-31",
+	"Resources": {
+		"Api": {
+			"Type": "AWS::Serverless::Api",
+			"Properties": {
+				"Name": {
+					"Fn::Sub": [
+						"${ResourceName} From Stack ${AWS::StackName}",
+						{
+							"ResourceName": "Api"
+						}
+					]
+				},
+				"StageName": "Prod",
+				"DefinitionBody": {
+					"openapi": "3.0",
+					"info": {},
+					"paths": {
+						"/": {
+							"get": {
+								"responses": {}
+							}
+						}
+					}
+				},
+				"EndpointConfiguration": "REGIONAL",
+				"TracingEnabled": true
+			}
+		},
+		"Table": {
+			"Type": "AWS::DynamoDB::Table",
+			"Properties": {
+				"AttributeDefinitions": [
+					{
+						"AttributeName": "id",
+						"AttributeType": "S"
+					}
+				],
+				"BillingMode": "PAY_PER_REQUEST",
+				"KeySchema": [
+					{
+						"AttributeName": "id",
+						"KeyType": "HASH"
+					}
+				],
+				"StreamSpecification": {
+					"StreamViewType": "NEW_AND_OLD_IMAGES"
+				}
+			}
+		},
+		"Bucket": {
+			"Type": "AWS::S3::Bucket",
+			"Properties": {
+				"BucketName": {
+					"Fn::Sub": "${AWS::StackName}-bucket-${AWS::AccountId}"
+				},
+				"BucketEncryption": {
+					"ServerSideEncryptionConfiguration": [
+						{
+							"ServerSideEncryptionByDefault": {
+								"SSEAlgorithm": "aws:kms",
+								"KMSMasterKeyID": "alias/aws/s3"
+							}
+						}
+					]
+				},
+				"PublicAccessBlockConfiguration": {
+					"IgnorePublicAcls": true,
+					"RestrictPublicBuckets": true
+				}
+			}
+		},
+		"BucketBucketPolicy": {
+			"Type": "AWS::S3::BucketPolicy",
+			"Properties": {
+				"Bucket": {
+					"Ref": "Bucket"
+				},
+				"PolicyDocument": {
+					"Id": "RequireEncryptionInTransit",
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Principal": "*",
+							"Action": "*",
+							"Effect": "Deny",
+							"Resource": [
+								{
+									"Fn::GetAtt": [
+										"Bucket",
+										"Arn"
+									]
+								},
+								{
+									"Fn::Sub": "${Bucket.Arn}/*"
+								}
+							],
+							"Condition": {
+								"Bool": {
+									"aws:SecureTransport": "false"
+								}
+							}
+						}
+					]
+				}
+			}
+		},
+		"UserPoolUser": {
+			"Type": "AWS::Cognito::UserPoolUser",
+			"Properties": {
+				"UserPoolId": "<String>"
+			}
+		}
+	},
+	"Metadata": {
+		"AWS::Composer::ExternalResources": {
+			"ExternalRDS": {
+				"Type": "externalRDS",
+				"Settings": {
+					"Port": {
+						"Ref": "ExternalRDSPort"
+					},
+					"Hostname": {
+						"Ref": "ExternalRDSHostname"
+					},
+					"SecretArn": {
+						"Ref": "ExternalRDSSecretArn"
+					}
+				}
+			}
+		}
+	},
+	"Parameters": {
+		"ExternalRDSPort": {
+			"Type": "Number"
+		},
+		"ExternalRDSHostname": {
+			"Type": "String"
+		},
+		"ExternalRDSSecretArn": {
+			"Type": "String"
+		}
+	}
+}
