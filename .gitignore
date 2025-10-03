@@ -26,6 +26,7 @@ yarn-error.log*
 
 # local env files
 .env
+.env.local
 
 # vercel
 .vercel
@@ -36,15 +37,25 @@ next-env.d.ts
 
 
 # amplify
-node_modules
-.amplify
 amplify_outputs*
 amplifyconfiguration*
 
-# scripts
+# other scripts
 
 .package-lock.json
 pnpm-lock.yaml
 yarn.lock
 package-lock.json
-.tsconfig.json
+
+tsconfig.json
+tailwind.config.js
+postcss.config.js
+next.config.js
+next-env.d.ts
+
+
+# folders
+
+/amplify
+/scripts
+/.vscode
