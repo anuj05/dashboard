@@ -1,8 +1,9 @@
-name: Auto Sync from Upstream
+name: Sync Fork with Upstream
 
 on:
-  workflow_dispatch:    # still allow manual runs
-  repository_dispatch:  # will be triggered by upstream webhook
+  schedule:
+    - cron: "0 */1 * * *"   # runs every 6 hours
+  workflow_dispatch:    # allow manual runs
 
 jobs:
   sync:
