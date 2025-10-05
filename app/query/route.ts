@@ -1,6 +1,7 @@
 import postgres from 'postgres';
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+// Disable prepared statements to support pgbouncer / pooled connections
+const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require', prepare: false });
 
 async function listInvoices() {
 	const data = await sql`

@@ -11,7 +11,11 @@ import { formatCurrency } from './utils';
 
 
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+// Disable prepared statements when connecting through pooled proxies (like
+// Supabase's pgbouncer). Prepared statements can fail with "does not exist"
+// errors when connections are proxied/pooled. See docs for the `postgres`
+// client: pass `prepare: false` to avoid server-side prepared statements.
+const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require', prepare: false });
 
 export async function fetchRevenue() {
   try {
@@ -219,10 +223,11 @@ export async function fetchFilteredCustomers(query: string) {
   }
 }
 
-// Fetch the last 5 invoices, sorted by date
-const data = await sql<LatestInvoiceRaw[]>`
-  SELECT invoices.amount, customers.name, customers.image_url, customers.email
-  FROM invoices
-  JOIN customers ON invoices.customer_id = customers.id
-  ORDER BY invoices.date DESC
-  LIMIT 5`;
+// Note: all database queries should run inside exported functions.
+// Previously there was a top-level `await sql` here which caused the
+// database to be queried when the module was imported. That resulted
+// in connection errors during app startup. Queries are now only run
+// inside functions like `fetchLatestInvoices`.
+
+
+
