@@ -6,6 +6,14 @@ import { lusitana } from '@/app/ui/fonts';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
 import { Suspense } from 'react';
 import { fetchInvoicesPages } from '@/app/lib/data';
+import { Metadata } from 'next';
+import exp from 'constants';
+
+export const metadata: Metadata = {
+  title: 'Invoices ',
+  description: 'Manage your invoices in the Acme Dashboard.',
+};
+
  
 export default async function Page(
   props: {

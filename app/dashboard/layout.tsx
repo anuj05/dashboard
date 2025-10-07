@@ -1,5 +1,13 @@
 import SideNav from '@/app/ui/dashboard/sidenav';
 
+import { Metadata } from 'next'; 
+
+export const metadata: Metadata = {
+  title: 'Dashboard',
+  description: 'The official Next.js Course Dashboard, built with App Router.',
+};
+
+
 export const  exprimental_ppr = true;
  
 export default function Layout({ children }: { children: React.ReactNode }) {
