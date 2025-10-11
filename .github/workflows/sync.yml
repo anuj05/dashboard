@@ -1,0 +1,37 @@
+name: Sync Fork with Upstream
+
+on:
+  schedule:
+    - cron: "0 */32 * * *"   # runs every 12 hours
+  workflow_dispatch:    # allow manual runs
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.UPSTREAM_PAT }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "the-anuj05"
+          git config user.email "theanujvishwakarma@gmail.com"
+
+      - name: Add upstream
+        run: git remote add upstream https://github.com/anuj05/dashboard.git
+
+      - name: Fetch upstream
+        run: git fetch upstream
+
+      - name: Merge upstream → fork
+        run: |
+          git checkout main
+          git merge upstream/main --allow-unrelated-histories || true
+
+      - name: Push changes
+        run: git push origin main
